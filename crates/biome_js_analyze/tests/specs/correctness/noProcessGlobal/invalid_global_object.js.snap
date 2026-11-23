@@ -33,7 +33,7 @@ invalid_global_object.js:2:1 lint/correctness/noProcessGlobal ━━━━━━
   
   i `process` global is hard for tools to statically analyze, so code should not assume they are available.
   
-  i Add `import process from "node:process";` to this file's imports and use the imported `process` instead.
+  i Use the `process` imported with `import process from "node:process";` instead.
   
 
 ```
@@ -52,7 +52,7 @@ invalid_global_object.js:4:11 lint/correctness/noProcessGlobal ━━━━━�
   
   i `process` global is hard for tools to statically analyze, so code should not assume they are available.
   
-  i Add `import process from "node:process";` to this file's imports and use the imported `process` instead.
+  i Use the `process` imported with `import process from "node:process";` instead.
   
 
 ```
@@ -71,7 +71,7 @@ invalid_global_object.js:6:11 lint/correctness/noProcessGlobal ━━━━━�
   
   i `process` global is hard for tools to statically analyze, so code should not assume they are available.
   
-  i Add `import process from "node:process";` to this file's imports and use the imported `process` instead.
+  i Use the `process` imported with `import process from "node:process";` instead.
   
 
 ```
@@ -90,7 +90,7 @@ invalid_global_object.js:8:11 lint/correctness/noProcessGlobal ━━━━━�
   
   i `process` global is hard for tools to statically analyze, so code should not assume they are available.
   
-  i Add `import process from "node:process";` to this file's imports and use the imported `process` instead.
+  i Use the `process` imported with `import process from "node:process";` instead.
   
 
 ```
@@ -109,7 +109,7 @@ invalid_global_object.js:10:11 lint/correctness/noProcessGlobal ━━━━━�
   
   i `process` global is hard for tools to statically analyze, so code should not assume they are available.
   
-  i Add `import process from "node:process";` to this file's imports and use the imported `process` instead.
+  i Use the `process` imported with `import process from "node:process";` instead.
   
 
 ```
@@ -127,7 +127,7 @@ invalid_global_object.js:12:18 lint/correctness/noProcessGlobal ━━━━━�
   
   i `process` global is hard for tools to statically analyze, so code should not assume they are available.
   
-  i Add `import process from "node:process";` to this file's imports and use the imported `process` instead.
+  i Use the `process` imported with `import process from "node:process";` instead.
   
 
 ```

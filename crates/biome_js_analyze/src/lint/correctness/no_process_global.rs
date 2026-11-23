@@ -88,10 +88,9 @@ impl Rule for NoProcessGlobal {
         .note(markup! {
             "`process` global is hard for tools to statically analyze, so code should not assume they are available."
         });
-        // No fix is offered for an access through the global object, so a note says what to do.
         if node.as_any_js_member_expression().is_some() {
             diagnostic = diagnostic.note(markup! {
-                "Add `import process from \"node:process\";` to this file's imports and use the imported `process` instead."
+                "Use the `process` imported with `import process from \"node:process\";` instead."
             });
         }
         Some(diagnostic)
