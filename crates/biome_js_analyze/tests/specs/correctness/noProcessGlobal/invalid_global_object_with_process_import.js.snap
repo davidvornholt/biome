@@ -1,0 +1,39 @@
+---
+source: crates/biome_js_analyze/tests/spec_tests.rs
+expression: invalid_global_object_with_process_import.js
+---
+# Input
+```js
+/* should generate diagnostics */
+import process from "node:process";
+
+const a = process.env;
+
+const b = globalThis.process.env;
+
+```
+
+# Diagnostics
+```
+invalid_global_object_with_process_import.js:6:11 lint/correctness/noProcessGlobal  FIXABLE  ━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    4 │ const a = process.env;
+    5 │ 
+  > 6 │ const b = globalThis.process.env;
+      │           ^^^^^^^^^^^^^^^^^^
+    7 │ 
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Safe fix: Use `process` imported from `node:process` instead.
+  
+    4 4 │   const a = process.env;
+    5 5 │   
+    6   │ - const·b·=·globalThis.process.env;
+      6 │ + const·b·=·process.env;
+    7 7 │   
+  
+
+```
