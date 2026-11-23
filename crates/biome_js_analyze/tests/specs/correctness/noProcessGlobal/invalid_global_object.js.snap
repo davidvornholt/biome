@@ -1,0 +1,133 @@
+---
+source: crates/biome_js_analyze/tests/spec_tests.rs
+expression: invalid_global_object.js
+---
+# Input
+```js
+/* should generate diagnostics */
+globalThis.process.exitCode = 1;
+
+const a = window.process.env;
+
+const b = globalThis["process"].env;
+
+const c = globalThis.window.process.env;
+
+const d = globalThis?.process?.env;
+
+const e = typeof globalThis.process;
+
+```
+
+# Diagnostics
+```
+invalid_global_object.js:2:1 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    1 │ /* should generate diagnostics */
+  > 2 │ globalThis.process.exitCode = 1;
+      │ ^^^^^^^^^^^^^^^^^^
+    3 │ 
+    4 │ const a = window.process.env;
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Use the `process` imported with `import process from "node:process";` instead.
+  
+
+```
+
+```
+invalid_global_object.js:4:11 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    2 │ globalThis.process.exitCode = 1;
+    3 │ 
+  > 4 │ const a = window.process.env;
+      │           ^^^^^^^^^^^^^^
+    5 │ 
+    6 │ const b = globalThis["process"].env;
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Use the `process` imported with `import process from "node:process";` instead.
+  
+
+```
+
+```
+invalid_global_object.js:6:11 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    4 │ const a = window.process.env;
+    5 │ 
+  > 6 │ const b = globalThis["process"].env;
+      │           ^^^^^^^^^^^^^^^^^^^^^
+    7 │ 
+    8 │ const c = globalThis.window.process.env;
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Use the `process` imported with `import process from "node:process";` instead.
+  
+
+```
+
+```
+invalid_global_object.js:8:11 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+     6 │ const b = globalThis["process"].env;
+     7 │ 
+   > 8 │ const c = globalThis.window.process.env;
+       │           ^^^^^^^^^^^^^^^^^^^^^^^^^
+     9 │ 
+    10 │ const d = globalThis?.process?.env;
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Use the `process` imported with `import process from "node:process";` instead.
+  
+
+```
+
+```
+invalid_global_object.js:10:11 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+     8 │ const c = globalThis.window.process.env;
+     9 │ 
+  > 10 │ const d = globalThis?.process?.env;
+       │           ^^^^^^^^^^^^^^^^^^^
+    11 │ 
+    12 │ const e = typeof globalThis.process;
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Use the `process` imported with `import process from "node:process";` instead.
+  
+
+```
+
+```
+invalid_global_object.js:12:18 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    10 │ const d = globalThis?.process?.env;
+    11 │ 
+  > 12 │ const e = typeof globalThis.process;
+       │                  ^^^^^^^^^^^^^^^^^^
+    13 │ 
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Use the `process` imported with `import process from "node:process";` instead.
+  
+
+```

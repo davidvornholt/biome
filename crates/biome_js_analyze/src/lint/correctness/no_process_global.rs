@@ -78,20 +78,31 @@ impl Rule for NoProcessGlobal {
 
     fn diagnostic(ctx: &RuleContext<Self>, _state: &Self::State) -> Option<RuleDiagnostic> {
         let node = ctx.query();
-        Some(
-            RuleDiagnostic::new(
-                rule_category!(),
-                node.range(),
-                markup! {
-                    "Usage of the `process` global is discouraged."
-                },
-            ).note(markup! {
-                "`process` global is hard for tools to statically analyze, so code should not assume they are available."
-            })
+        let mut diagnostic = RuleDiagnostic::new(
+            rule_category!(),
+            node.range(),
+            markup! {
+                "Usage of the `process` global is discouraged."
+            },
         )
+        .note(markup! {
+            "`process` global is hard for tools to statically analyze, so code should not assume they are available."
+        });
+        if node.as_any_js_member_expression().is_some() {
+            diagnostic = diagnostic.note(markup! {
+                "Use the `process` imported with `import process from \"node:process\";` instead."
+            });
+        }
+        Some(diagnostic)
     }
 
     fn action(ctx: &RuleContext<Self>, _state: &Self::State) -> Option<JsRuleAction> {
+        // An import doesn't change what `globalThis.process` reads, so the rule would report the
+        // access again after adding one. Replacing the access with the imported `process` isn't
+        // safe either, because the global object's property can be missing or reassigned.
+        if ctx.query().as_any_js_member_expression().is_some() {
+            return None;
+        }
         let top_level_statement = ctx
             .query()
             .syntax()
