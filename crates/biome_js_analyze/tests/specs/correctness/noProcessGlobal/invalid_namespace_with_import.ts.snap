@@ -1,0 +1,39 @@
+---
+source: crates/biome_js_analyze/tests/spec_tests.rs
+expression: invalid_namespace_with_import.ts
+---
+# Input
+```ts
+import a from "a";
+
+namespace A {
+	export const b = a;
+	export const c = process.env;
+}
+
+```
+
+# Diagnostics
+```
+invalid_namespace_with_import.ts:5:19 lint/correctness/noProcessGlobal  FIXABLE  ━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    3 │ namespace A {
+    4 │ 	export const b = a;
+  > 5 │ 	export const c = process.env;
+      │ 	                 ^^^^^^^
+    6 │ }
+    7 │ 
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+  i Safe fix: Add `import process from "node:process";` to this file's imports.
+  
+    1 1 │   import a from "a";
+      2 │ + import·process·from·"node:process";
+    2 3 │   
+    3 4 │   namespace A {
+  
+
+```
