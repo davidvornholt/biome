@@ -1,0 +1,30 @@
+---
+source: crates/biome_js_analyze/tests/spec_tests.rs
+expression: invalid_suppression_all.js
+---
+# Input
+```js
+/* biome-ignore lint/correctness/noProcessGlobal: the first statement keeps its suppression
+ * biome-ignore-all lint/suspicious/noDebugger: debugging is allowed in this file
+ */
+const a = process.env;
+const b = process.env;
+
+```
+
+# Diagnostics
+```
+invalid_suppression_all.js:5:11 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    3 │  */
+    4 │ const a = process.env;
+  > 5 │ const b = process.env;
+      │           ^^^^^^^
+    6 │ 
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+
+```

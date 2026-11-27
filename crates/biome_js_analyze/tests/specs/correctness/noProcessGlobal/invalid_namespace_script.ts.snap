@@ -1,0 +1,50 @@
+---
+source: crates/biome_js_analyze/tests/spec_tests.rs
+expression: invalid_namespace_script.ts
+---
+# Input
+```ts
+namespace A {
+	export const a = process.env;
+}
+
+declare namespace B {
+	const b: typeof process;
+}
+
+const c = process.cwd();
+
+```
+
+# Diagnostics
+```
+invalid_namespace_script.ts:2:19 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+    1 │ namespace A {
+  > 2 │ 	export const a = process.env;
+      │ 	                 ^^^^^^^
+    3 │ }
+    4 │ 
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+
+```
+
+```
+invalid_namespace_script.ts:9:11 lint/correctness/noProcessGlobal ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Usage of the `process` global is discouraged.
+  
+     7 │ }
+     8 │ 
+   > 9 │ const c = process.cwd();
+       │           ^^^^^^^
+    10 │ 
+  
+  i `process` global is hard for tools to statically analyze, so code should not assume they are available.
+  
+
+```
