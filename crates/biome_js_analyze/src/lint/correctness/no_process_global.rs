@@ -7,7 +7,6 @@ use biome_console::markup;
 use biome_js_factory::make;
 use biome_js_syntax::JsImport;
 use biome_js_syntax::JsLanguage;
-use biome_js_syntax::JsModuleItemList;
 use biome_js_syntax::JsSyntaxKind;
 use biome_js_syntax::T;
 use biome_js_syntax::{AnyPossibleGlobalIdentifier, global_identifier};
@@ -105,18 +104,10 @@ impl Rule for NoProcessGlobal {
             .find(|node| node.parent().as_ref() == Some(&module_item_list))?;
         // In a file without imports or exports, a namespace is global. The new import would turn
         // the file into a module and make the namespace local to it.
-        let in_namespace = ctx
-            .query()
-            .syntax()
-            .ancestors()
-            .find(|node| JsModuleItemList::can_cast(node.kind()))
-            .as_ref()
-            != Some(&module_item_list);
-        if in_namespace
-            && !module_item_list.children().any(|item| {
-                matches!(item.kind(), JsSyntaxKind::JS_IMPORT | JsSyntaxKind::JS_EXPORT)
-            })
-        {
+        let is_module = module_item_list
+            .children()
+            .any(|item| matches!(item.kind(), JsSyntaxKind::JS_IMPORT | JsSyntaxKind::JS_EXPORT));
+        if !is_module && module_item_list.children().any(|item| declares_namespace(&item)) {
             return None;
         }
         let mut most_recent_import = None;
@@ -168,6 +159,22 @@ impl Rule for NoProcessGlobal {
             mutation,
         ))
     }
+}
+
+/// Returns whether the module item declares a namespace, such as `namespace A {}`,
+/// `declare namespace A {}` or `declare module "a" {}`.
+fn declares_namespace(item: &SyntaxNode<JsLanguage>) -> bool {
+    let declaration = if item.kind() == JsSyntaxKind::TS_DECLARE_STATEMENT {
+        item.last_child()
+    } else {
+        Some(item.clone())
+    };
+    declaration.is_some_and(|declaration| {
+        matches!(
+            declaration.kind(),
+            JsSyntaxKind::TS_MODULE_DECLARATION | JsSyntaxKind::TS_EXTERNAL_MODULE_DECLARATION
+        )
+    })
 }
 
 /// Returns the index in `trivia`, the leading trivia of the file's first statement, where the
