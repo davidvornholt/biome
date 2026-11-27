@@ -7,6 +7,7 @@ use biome_console::markup;
 use biome_js_factory::make;
 use biome_js_syntax::JsImport;
 use biome_js_syntax::JsLanguage;
+use biome_js_syntax::JsModuleItemList;
 use biome_js_syntax::JsSyntaxKind;
 use biome_js_syntax::T;
 use biome_js_syntax::{AnyPossibleGlobalIdentifier, global_identifier};
@@ -17,7 +18,7 @@ use biome_rowan::SyntaxNode;
 use biome_rowan::SyntaxTriviaPiece;
 use biome_rowan::TriviaPieceKind;
 use biome_rule_options::no_process_global::NoProcessGlobalOptions;
-use biome_suppression::parse_suppression_comment;
+use biome_suppression::{SuppressionKind, parse_suppression_comment};
 use smallvec::SmallVec;
 use smallvec::smallvec;
 
@@ -102,6 +103,22 @@ impl Rule for NoProcessGlobal {
             .ancestors()
             .skip(1)
             .find(|node| node.parent().as_ref() == Some(&module_item_list))?;
+        // In a file without imports or exports, a namespace is global. The new import would turn
+        // the file into a module and make the namespace local to it.
+        let in_namespace = ctx
+            .query()
+            .syntax()
+            .ancestors()
+            .find(|node| JsModuleItemList::can_cast(node.kind()))
+            .as_ref()
+            != Some(&module_item_list);
+        if in_namespace
+            && !module_item_list.children().any(|item| {
+                matches!(item.kind(), JsSyntaxKind::JS_IMPORT | JsSyntaxKind::JS_EXPORT)
+            })
+        {
+            return None;
+        }
         // insert new import at:
         // 1. after the most recent import statement. Or, if no such import exist
         // 2. before the first statement, after any leading trivia that doesn't belong to it
@@ -124,7 +141,7 @@ impl Rule for NoProcessGlobal {
         } else {
             let first_item = module_item_list.first_child()?;
             let mut header: Vec<_> = first_item.first_leading_trivia()?.pieces().collect();
-            let statement_trivia = header.split_off(statement_trivia_start(&header));
+            let statement_trivia = header.split_off(statement_trivia_start(&header)?);
             new_items = smallvec![
                 create_process_import(true)
                     .into_syntax()
@@ -162,18 +179,31 @@ impl Rule for NoProcessGlobal {
 /// A `biome-ignore` comment applies to the statement that follows it, so the trivia from the first
 /// such comment on, with the indentation before it, stays with the statement. All other comments
 /// stay above the new import, so that a file header remains at the top.
-fn statement_trivia_start(trivia: &[SyntaxTriviaPiece<JsLanguage>]) -> usize {
-    let Some(mut start) = trivia.iter().position(|piece| {
+///
+/// Returns `None` when a `biome-ignore-all` comment would end up below the new import, because it
+/// only applies at the top of the file.
+fn statement_trivia_start(trivia: &[SyntaxTriviaPiece<JsLanguage>]) -> Option<usize> {
+    let has_suppression = |piece: &SyntaxTriviaPiece<JsLanguage>, kind: SuppressionKind| {
         piece.kind().is_comment()
             && parse_suppression_comment(piece.text())
-                .any(|suppression| suppression.is_ok_and(|s| s.kind.is_classic()))
-    }) else {
-        return trivia.len();
+                .any(|suppression| suppression.is_ok_and(|s| s.kind == kind))
     };
+    let Some(mut start) = trivia
+        .iter()
+        .position(|piece| has_suppression(piece, SuppressionKind::Classic))
+    else {
+        return Some(trivia.len());
+    };
+    if trivia[start..]
+        .iter()
+        .any(|piece| has_suppression(piece, SuppressionKind::All))
+    {
+        return None;
+    }
     while start > 0 && trivia[start - 1].kind().is_whitespace() {
         start -= 1;
     }
-    start
+    Some(start)
 }
 
 fn create_process_import(with_trailing_new_line: bool) -> JsImport {

@@ -1,4 +1,4 @@
-namespace A {
+export namespace A {
 	export const a = process.env;
 }
 
