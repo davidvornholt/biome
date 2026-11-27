@@ -119,9 +119,6 @@ impl Rule for NoProcessGlobal {
         {
             return None;
         }
-        // insert new import at:
-        // 1. after the most recent import statement. Or, if no such import exist
-        // 2. before the first statement, after any leading trivia that doesn't belong to it
         let mut most_recent_import = None;
         let mut sibling_iter = top_level_statement.prev_sibling();
         while let Some(node) = sibling_iter {
@@ -177,8 +174,8 @@ impl Rule for NoProcessGlobal {
 /// trivia that belongs to the statement starts.
 ///
 /// A `biome-ignore` comment applies to the statement that follows it, so the trivia from the first
-/// such comment on, with the indentation before it, stays with the statement. All other comments
-/// stay above the new import, so that a file header remains at the top.
+/// such comment on, with the indentation before it, stays with the statement. The trivia before it
+/// stays above the new import, so that a file header remains at the top.
 ///
 /// Returns `None` when a `biome-ignore-all` comment would end up below the new import, because it
 /// only applies at the top of the file.
